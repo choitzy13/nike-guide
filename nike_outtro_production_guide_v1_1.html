@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나이키 × 디아우트로 — 프로덕션 가이드</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0a0a0a;
+  --white: #f5f3ee;
+  --accent: #c8f23a;
+  --nike-orange: #ff6b35;
+  --muted: #888;
+  --border: rgba(245,243,238,0.1);
+  --card-bg: #141414;
+  --blue: #3b82f6;
+  --teal: #14b8a6;
+  --amber: #f59e0b;
+  --pink: #ec4899;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 2rem;
+  display: flex; align-items: center; gap: 0; overflow-x: auto;
+}
+nav a {
+  color: var(--muted); text-decoration: none;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  padding: 1rem 1.2rem; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+}
+nav a:hover { color: var(--white); }
+nav a.active { color: var(--accent); border-color: var(--accent); }
+
+/* HERO */
+.hero {
+  padding: 5rem 2rem 4rem;
+  border-bottom: 1px solid var(--border);
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(200,242,58,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--accent); letter-spacing: .15em;
+  margin-bottom: 1rem;
+}
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: .95; letter-spacing: -.01em;
+  margin-bottom: 1.5rem;
+}
+.hero-title span { color: var(--accent); }
+.hero-meta {
+  display: flex; gap: 2rem; flex-wrap: wrap;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--muted);
+}
+.hero-meta strong { color: var(--white); font-weight: 500; }
+
+/* SECTION */
+section { padding: 3rem 2rem; border-bottom: 1px solid var(--border); }
+.section-eyebrow {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--muted); letter-spacing: .12em;
+  text-transform: uppercase; margin-bottom: .5rem;
+}
+h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; letter-spacing: .02em;
+  margin-bottom: 1.5rem;
+}
+h3 {
+  font-size: 13px; font-weight: 500;
+  margin-bottom: .6rem; color: var(--white);
+}
+
+/* GRID */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+@media(max-width:680px){
+  .grid-2,.grid-3 { grid-template-columns: 1fr; }
+}
+
+/* CARD */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem;
+}
+.card-accent-teal { border-top: 2px solid var(--teal); }
+.card-accent-blue { border-top: 2px solid var(--blue); }
+.card-accent-amber { border-top: 2px solid var(--amber); }
+.card-accent-pink { border-top: 2px solid var(--pink); }
+.card-accent-lime { border-top: 2px solid var(--accent); }
+
+/* TAG / BADGE */
+.tag {
+  display: inline-block; font-size: 10px; font-weight: 500;
+  font-family: 'DM Mono', monospace;
+  padding: 3px 8px; border-radius: 4px; margin: 2px 2px 2px 0;
+}
+.tag-lime { background: rgba(200,242,58,.15); color: var(--accent); }
+.tag-blue { background: rgba(59,130,246,.15); color: #93c5fd; }
+.tag-teal { background: rgba(20,184,166,.15); color: #5eead4; }
+.tag-amber { background: rgba(245,158,11,.15); color: #fcd34d; }
+.tag-pink { background: rgba(236,72,153,.15); color: #f9a8d4; }
+.tag-gray { background: rgba(255,255,255,.06); color: var(--muted); }
+.tag-orange { background: rgba(255,107,53,.15); color: #ff9d6e; }
+
+/* CHANNEL BADGE */
+.ch-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 500;
+  padding: 4px 10px; border-radius: 20px;
+  margin-bottom: .8rem;
+}
+.ch-artren { background: rgba(236,72,153,.15); color: #f9a8d4; border: 1px solid rgba(236,72,153,.3); }
+.ch-artrender { background: rgba(200,242,58,.12); color: var(--accent); border: 1px solid rgba(200,242,58,.25); }
+.ch-oneheadspa { background: rgba(20,184,166,.15); color: #5eead4; border: 1px solid rgba(20,184,166,.3); }
+.ch-nike { background: rgba(255,107,53,.12); color: #ff9d6e; border: 1px solid rgba(255,107,53,.25); }
+
+/* CAMERA BLOCK */
+.cam-block {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.cam-row {
+  display: flex; align-items: baseline; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.cam-row:last-child { border-bottom: none; }
+.cam-key {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--muted); width: 90px; flex-shrink: 0;
+}
+.cam-val { font-size: 13px; color: var(--white); }
+
+/* SHOT TABLE */
+.shot-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.shot-table th {
+  text-align: left; padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--muted); font-weight: 400;
+}
+.shot-table td {
+  padding: 10px 10px; vertical-align: top;
+  border-bottom: 1px solid rgba(245,243,238,.05);
+  line-height: 1.5;
+}
+.shot-table tr:last-child td { border-bottom: none; }
+.shot-table tr:hover td { background: rgba(255,255,255,.02); }
+
+/* TIMELINE */
+.timeline { display: flex; flex-direction: column; gap: 0; }
+.tl-item {
+  display: flex; gap: 1rem; padding: 1rem 0;
+  border-bottom: 1px solid rgba(245,243,238,.05);
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem;
+  color: rgba(245,243,238,.08); line-height: 1;
+  flex-shrink: 0; width: 48px; text-align: right;
+}
+.tl-content { flex: 1; padding-top: 2px; }
+.tl-title { font-weight: 500; font-size: 13px; margin-bottom: .3rem; }
+.tl-sub { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+/* SPEC ROW */
+.spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.spec-cell { background: var(--card-bg); padding: .8rem 1rem; }
+.spec-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: .2rem; }
+.spec-value { font-size: 13px; color: var(--white); font-weight: 400; }
+
+/* MOOD CARD */
+.mood-card {
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 1.25rem; position: relative; overflow: hidden;
+}
+.mood-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 5rem; position: absolute;
+  right: 1rem; bottom: -.5rem; opacity: .06;
+  line-height: 1;
+}
+
+/* HOOK CARD */
+.hook-ver {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--accent); margin-bottom: .4rem;
+}
+.hook-seq {
+  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: .5rem;
+}
+.hook-step {
+  background: rgba(255,255,255,.06);
+  padding: 3px 8px; border-radius: 4px;
+  font-size: 11px; display: flex; align-items: center; gap: 4px;
+}
+.hook-arrow { color: var(--muted); font-size: 10px; }
+.hook-caption {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem; letter-spacing: .05em;
+  color: var(--accent);
+}
+
+/* MIC BADGE */
+.mic-row { display: flex; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid rgba(245,243,238,.05); }
+.mic-row:last-child { border-bottom: none; }
+.mic-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* CONTENT PLAN */
+.content-channel { margin-bottom: 2.5rem; }
+.content-channel:last-child { margin-bottom: 0; }
+
+/* ACCORDION */
+details { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; overflow: hidden; }
+summary {
+  padding: .9rem 1.1rem; cursor: pointer;
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; justify-content: space-between;
+  list-style: none; background: var(--card-bg);
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: '+'; font-family: 'DM Mono', monospace; font-size: 16px; color: var(--muted); }
+details[open] summary::after { content: '−'; }
+details[open] summary { border-bottom: 1px solid var(--border); }
+.details-body { padding: 1rem 1.1rem; background: rgba(20,20,20,.6); font-size: 13px; line-height: 1.8; }
+
+/* PILL ROW */
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin: .5rem 0; }
+
+/* WARN BOX */
+.warn-box {
+  border-left: 3px solid var(--amber);
+  background: rgba(245,158,11,.06);
+  padding: .7rem 1rem; border-radius: 0 8px 8px 0;
+  font-size: 12px; color: #fcd34d; margin: .5rem 0;
+}
+
+/* CHECKLIST */
+.check-list { list-style: none; }
+.check-list li {
+  padding: .4rem 0; border-bottom: 1px solid rgba(245,243,238,.05);
+  font-size: 12px; display: flex; align-items: flex-start; gap: .6rem;
+}
+.check-list li:last-child { border-bottom: none; }
+.check-list li::before { content: '□'; font-size: 14px; color: var(--muted); flex-shrink: 0; margin-top: 1px; }
+
+
+
+/* FIELD INFO */
+.quick-strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+  margin: 1rem 0 1.5rem;
+}
+.quick-cell {
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  border-radius: 10px; padding: .9rem 1rem;
+}
+.quick-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: .25rem; }
+.quick-value { font-size: 13px; font-weight: 500; color: var(--white); }
+.action-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:.8rem; }
+.action-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.7rem 1rem; border-radius:999px; text-decoration:none;
+  font-family:'DM Mono', monospace; font-size:11px; font-weight:500;
+  border:1px solid var(--border); color:var(--white); background:rgba(255,255,255,.05);
+}
+.action-btn.primary { color:var(--black); background:var(--accent); border-color:var(--accent); }
+.route-card { display:grid; grid-template-columns: 100px 1fr; gap: 10px; align-items:start; padding:.7rem 0; border-bottom:1px solid rgba(245,243,238,.05); }
+.route-card:last-child { border-bottom:none; }
+.route-key { font-family:'DM Mono', monospace; font-size:10px; color:var(--muted); }
+.route-val { font-size:12px; color:var(--white); line-height:1.65; }
+@media(max-width:780px){ .quick-strip { grid-template-columns: 1fr 1fr; } .route-card { grid-template-columns: 1fr; gap:4px;} }
+@media(max-width:520px){ .quick-strip { grid-template-columns: 1fr; } }
+
+/* FOOTER */
+footer {
+  padding: 2rem; text-align: center;
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: rgba(245,243,238,.2); border-top: 1px solid var(--border);
+}
+
+/* PRINT */
+@media print {
+  nav { display: none; }
+  section { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<nav id="topnav">
+  <a href="#mood" class="active">무드 브리프</a>
+  <a href="#fieldinfo">장소·이동</a>
+  <a href="#camera">카메라 세팅</a>
+  <a href="#shotlist">숏리스트</a>
+  <a href="#artren">아트렌</a>
+  <a href="#artrender">아트렌더</a>
+  <a href="#oneheadspa">원헤드스파</a>
+  <a href="#checklist">현장 체크리스트</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">PRODUCTION GUIDE v1.1</div>
+  <h1 class="hero-title">NIKE NIGHT<br>MARKET <span>×</span><br>THE OUTTRO</h1>
+  <div class="hero-meta">
+    <div><strong>메인 클라이언트</strong> 나이키 × 디아우트로 바버샵</div>
+    <div><strong>내 채널</strong> 아트렌 · 아트렌더 · 원헤드스파</div>
+    <div><strong>장소</strong> 남산골한옥마을 · 서울 중구 퇴계로34길 28</div>
+    <div><strong>카메라</strong> Nikon ZR · Nikon Z6III</div>
+    <div><strong>마이크</strong> Rode Wireless Pro · DJI Mic Mini ×2</div>
+  </div>
+</div>
+
+<!-- FIELD INFO -->
+<section id="fieldinfo">
+  <div class="section-eyebrow">00 — FIELD INFO</div>
+  <h2>현장 정보 · 이동 · 주차</h2>
+
+  <div class="quick-strip">
+    <div class="quick-cell"><div class="quick-label">VENUE</div><div class="quick-value">남산골한옥마을</div></div>
+    <div class="quick-cell"><div class="quick-label">ADDRESS</div><div class="quick-value">서울 중구 퇴계로34길 28</div></div>
+    <div class="quick-cell"><div class="quick-label">START</div><div class="quick-value">사가정역 출발</div></div>
+    <div class="quick-cell"><div class="quick-label">RECOMMEND</div><div class="quick-value">장비 동반 시 자차 우선</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:1rem">
+    <div class="card card-accent-lime">
+      <h3>최종 이동 판단</h3>
+      <div class="route-card"><div class="route-key">자차 추천</div><div class="route-val">ZR + Z6III 2바디, 렌즈, 마이크, LED, 예비 배터리까지 가져가면 자차가 안전. 차량을 장비 베이스캠프로 사용.</div></div>
+      <div class="route-card"><div class="route-key">대중교통</div><div class="route-val">백팩 1개 수준으로 줄일 때만 추천. 사가정역 → 군자 환승 → 동대문역사문화공원 환승 → 충무로역 → 도보.</div></div>
+      <div class="route-card"><div class="route-key">현장 운영</div><div class="route-val">입구 근처에서 장비 하차 → 필요한 장비만 휴대 → 예비 장비는 차량에 보관.</div></div>
+    </div>
+    <div class="card card-accent-amber">
+      <h3>주차 전략</h3>
+      <div class="route-card"><div class="route-key">1순위</div><div class="route-val">남산골한옥마을 인근 공영주차장 우선 검색. 만차 가능성 대비.</div></div>
+      <div class="route-card"><div class="route-key">2순위</div><div class="route-val">충무로역·필동·동국대입구 방향 공영/민영 주차장 백업.</div></div>
+      <div class="route-card"><div class="route-key">하이브리드</div><div class="route-val">저공해차 등록 여부에 따라 공영주차장 감면 가능. 입차 전 ‘저공해 감면 가능’ 확인.</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>현장 바로가기</h3>
+    <div class="action-row">
+      <a class="action-btn primary" href="https://naver.me/F3E9vRg2" target="_blank" rel="noopener">NAVER MAP</a>
+      <a class="action-btn" href="https://map.naver.com/p/search/%EB%82%A8%EC%82%B0%EA%B3%A8%ED%95%9C%EC%98%A5%EB%A7%88%EC%9D%84%20%EC%A3%BC%EC%B0%A8%EC%9E%A5" target="_blank" rel="noopener">주차장 검색</a>
+      <a class="action-btn" href="https://map.naver.com/p/directions/-/14137625.1068017,4516406.7029662,%EB%82%A8%EC%82%B0%EA%B3%A8%ED%95%9C%EC%98%A5%EB%A7%88%EC%9D%84,11591411,PLACE_POI/-/transit" target="_blank" rel="noopener">대중교통 길찾기</a>
+    </div>
+    <div class="warn-box" style="margin-top:1rem">요금·만차·감면 여부는 실시간 변동. 출발 전 네이버지도에서 현재 주차 가능성과 도착 예정 시간을 확인.</div>
+  </div>
+</section>
+
+
+<!-- MOOD BRIEF -->
+<section id="mood">
+  <div class="section-eyebrow">01 — CONCEPT BRIEF</div>
+  <h2>콘셉트 & 무드 브리프</h2>
+
+  <div class="grid-3" style="margin-bottom:1.5rem">
+    <div class="mood-card">
+      <div class="section-eyebrow">무드 01</div>
+      <h3 style="font-size:15px;margin-bottom:.3rem">날카롭고 리드미컬한</h3>
+      <p style="font-size:12px;color:var(--muted)">바리깡 라인워크의 정밀함을 비트 싱크로 전달</p>
+      <div class="mood-num">1</div>
+    </div>
+    <div class="mood-card">
+      <div class="section-eyebrow">무드 02</div>
+      <h3 style="font-size:15px;margin-bottom:.3rem">스트리트하지만 프리미엄한</h3>
+      <p style="font-size:12px;color:var(--muted)">나이키 스포츠 에너지 + 바버 장인정신</p>
+      <div class="mood-num">2</div>
+    </div>
+    <div class="mood-card">
+      <div class="section-eyebrow">무드 03</div>
+      <h3 style="font-size:15px;margin-bottom:.3rem">청량하고 감각적인</h3>
+      <p style="font-size:12px;color:var(--muted)">건식 헤드스파 미스트 입자 + ASMR 청각</p>
+      <div class="mood-num">3</div>
+    </div>
+  </div>
+
+  <!-- 오프닝 훅 -->
+  <h3 style="margin-bottom:1rem">영상 오프닝 훅 (첫 3초) — 3가지 버전</h3>
+  <div class="grid-3">
+    <div class="card card-accent-teal">
+      <div class="hook-ver">VER A — ASMR</div>
+      <div class="hook-seq">
+        <span class="hook-step">클리퍼 진동</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">가위질</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">토닉 분사</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">체어 매치컷</span>
+      </div>
+      <div class="hook-caption">"CUT. SPRAY. RESET."</div>
+    </div>
+    <div class="card card-accent-blue">
+      <div class="hook-ver">VER B — 바버 클로즈업</div>
+      <div class="hook-seq">
+        <span class="hook-step">목덜미 라인워크</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">눈빛/손목 점프컷</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">시저오버콤</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">로우앵글</span>
+      </div>
+      <div class="hook-caption">"밤을 가르는 라인"</div>
+    </div>
+    <div class="card card-accent-lime">
+      <div class="hook-ver">VER C — 나이트 마켓 광각</div>
+      <div class="hook-seq">
+        <span class="hook-step">네온 광각</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">부스 팬</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">크루 준비 손</span>
+        <span class="hook-arrow">→</span>
+        <span class="hook-step">고객 착석</span>
+      </div>
+      <div class="hook-caption">"NIKE NIGHT MARKET × THE OUTTRO"</div>
+    </div>
+  </div>
+
+  <!-- 색감 & 음악 -->
+  <div class="grid-2" style="margin-top:1rem">
+    <div class="card">
+      <h3>색감 · 조명 키워드</h3>
+      <div class="cam-block" style="margin-top:.5rem">
+        <div class="cam-row"><span class="cam-key">전체 팔레트</span><span class="cam-val">네온 테일 + 딥 블랙 + 웜 스킨톤</span></div>
+        <div class="cam-row"><span class="cam-key">보조광</span><span class="cam-val">5600K 포터블 LED — 얼굴만 자연스럽게</span></div>
+        <div class="cam-row"><span class="cam-key">바버 컷</span><span class="cam-val">하드 콘트라스트 + 림라이트 역광</span></div>
+        <div class="cam-row"><span class="cam-key">헤드스파</span><span class="cam-val">소프트 하이라이트 + 미스트 입자 강조</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>배경음악 무드 레퍼런스</h3>
+      <div class="cam-block" style="margin-top:.5rem">
+        <div class="cam-row"><span class="cam-key">장르</span><span class="cam-val">Alt Hip-Hop / UK Garage / Lo-fi Trap + ASMR</span></div>
+        <div class="cam-row"><span class="cam-key">Track A</span><span class="cam-val">A$AP Rocky — "Sundress"</span></div>
+        <div class="cam-row"><span class="cam-key">Track B</span><span class="cam-val">Kaytranada — "Lite Spots"</span></div>
+        <div class="cam-row"><span class="cam-key">Track C</span><span class="cam-val">Skepta — "Shutdown"</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAMERA SETUP -->
+<section id="camera">
+  <div class="section-eyebrow">02 — CAMERA SETUP</div>
+  <h2>카메라 & 장비 세팅 전략</h2>
+
+  <!-- 역할 분담 -->
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card card-accent-blue">
+      <div class="ch-badge ch-nike" style="margin-bottom:.8rem">PRIMARY CAM</div>
+      <h3>Nikon Z6III</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:.8rem">메인 시네마틱 · 바버 클로즈업 · 인터뷰 전담</p>
+      <div class="cam-block">
+        <div class="cam-row"><span class="cam-key">포맷</span><span class="cam-val">N-Log / ProRes 계열 4K 60p</span></div>
+        <div class="cam-row"><span class="cam-key">색공간</span><span class="cam-val">N-Log (편집 시 LUT 적용)</span></div>
+        <div class="cam-row"><span class="cam-key">셔터</span><span class="cam-val">1/120s (60p), 1/50s (24p)</span></div>
+        <div class="cam-row"><span class="cam-key">ISO 저조도</span><span class="cam-val">ISO 800~3200 (고감도 강점 활용)</span></div>
+        <div class="cam-row"><span class="cam-key">화이트밸런스</span><span class="cam-val">수동 5600K 고정 (네온 억제)</span></div>
+        <div class="cam-row"><span class="cam-key">오디오</span><span class="cam-val">Rode Wireless Pro → Z6III 입력</span></div>
+      </div>
+    </div>
+    <div class="card card-accent-amber">
+      <div class="ch-badge ch-artren" style="margin-bottom:.8rem">B-CAM / POCKET</div>
+      <h3>Nikon ZR</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:.8rem">B-CAM · 광각 스케치 · 숏폼 전용 앵글</p>
+      <div class="cam-block">
+        <div class="cam-row"><span class="cam-key">포맷</span><span class="cam-val">4K 60p / Log 계열</span></div>
+        <div class="cam-row"><span class="cam-key">색공간</span><span class="cam-val">Z6III와 매칭 가능한 Log/Flat 세팅</span></div>
+        <div class="cam-row"><span class="cam-key">셔터</span><span class="cam-val">1/120s (60p 슬로모)</span></div>
+        <div class="cam-row"><span class="cam-key">ISO</span><span class="cam-val">ISO 800~3200 범위 테스트</span></div>
+        <div class="cam-row"><span class="cam-key">특기</span><span class="cam-val">광각 스케치 · 손持ち 무빙 · 현장 리액션</span></div>
+        <div class="cam-row"><span class="cam-key">오디오</span><span class="cam-val">DJI Mic Mini 또는 카메라 광각 렌즈 앰비언스</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 렌즈 배분 -->
+  <h3 style="margin-bottom:.8rem">2바디 운용 기준</h3>
+  <div class="grid-2" style="margin-bottom:1rem">
+    <div class="card card-accent-blue"><div class="section-eyebrow">A-CAM</div><h3>Nikon Z6III</h3><p style="font-size:12px;color:var(--muted)">85mm 중심. 바버 라인워크, 표정, 손기술, 인터뷰용.</p></div>
+    <div class="card card-accent-amber"><div class="section-eyebrow">B-CAM</div><h3>Nikon ZR</h3><p style="font-size:12px;color:var(--muted)">24-70mm 또는 광각 중심. 부스 전경, 크루, 비하인드, 세로 릴스용.</p></div>
+  </div>
+
+  <h3 style="margin-bottom:.8rem">렌즈 배분 전략</h3>
+  <div class="grid-2" style="margin-bottom:1.5rem">
+    <div class="card">
+      <div class="section-eyebrow" style="margin-bottom:.5rem">85mm F1.4 (Z6III)</div>
+      <div class="pill-row">
+        <span class="tag tag-blue">바버 클로즈업</span>
+        <span class="tag tag-blue">인물 인터뷰</span>
+        <span class="tag tag-blue">목덜미 라인워크</span>
+        <span class="tag tag-blue">고객 표정 변화</span>
+      </div>
+      <div class="warn-box" style="margin-top:.7rem">
+        저조도 나이트 마켓 환경에서 85mm는 F1.4~1.8 고정. 아웃포커싱으로 네온 배경 보케 연출.
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-eyebrow" style="margin-bottom:.5rem">24-70mm F2.8 (Z6III)</div>
+      <div class="pill-row">
+        <span class="tag tag-amber">부스 광각 스케치</span>
+        <span class="tag tag-amber">크루 전체 숏</span>
+        <span class="tag tag-amber">나이키 브랜드 보드 팬</span>
+        <span class="tag tag-amber">비포/애프터 전신</span>
+      </div>
+      <div class="warn-box" style="margin-top:.7rem">
+        24mm 광각 → 행사 스케일감. 70mm 망원 → 크루 리액션 몰래 포착. 줌 활용 극대화.
+      </div>
+    </div>
+  </div>
+
+  <!-- 마이크 배분 -->
+  <h3 style="margin-bottom:.8rem">마이크 배분 & 트랙 전략</h3>
+  <div class="card">
+    <div class="cam-block">
+      <div class="mic-row">
+        <div class="mic-dot" style="background:#ff6b35"></div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:500">Rode Wireless Pro → Z6III 카메라 인</div>
+          <div style="font-size:11px;color:var(--muted)">바버 손목 or 앞치마 근접 장착 — 가위질·클리퍼 시술음 독립 트랙</div>
+        </div>
+        <span class="tag tag-orange">Track 1</span>
+      </div>
+      <div class="mic-row">
+        <div class="mic-dot" style="background:#3b82f6"></div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:500">DJI Mic Mini ①  → 헤드스파 스페셜리스트</div>
+          <div style="font-size:11px;color:var(--muted)">스프레이 분사음 · 두피 마사지음 독립 수음</div>
+        </div>
+        <span class="tag tag-blue">Track 2</span>
+      </div>
+      <div class="mic-row">
+        <div class="mic-dot" style="background:#14b8a6"></div>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:500">DJI Mic Mini ② → Osmo ZR 직결</div>
+          <div style="font-size:11px;color:var(--muted)">현장 앰비언스 + 고객 리액션 자연음 — 비하인드 전용</div>
+        </div>
+        <span class="tag tag-teal">Track 3</span>
+      </div>
+    </div>
+    <div class="warn-box" style="margin-top:.8rem">
+      3트랙 동시 수음 → 편집 시 ASMR 버전/일반 버전 분리 가능. Rode Pro는 32bit Float 활용, 클리핑 방지.
+    </div>
+  </div>
+
+  <!-- 앵글 매핑 -->
+  <h3 style="margin-top:1.5rem;margin-bottom:.8rem">카메라별 앵글 배분표</h3>
+  <table class="shot-table">
+    <thead>
+      <tr>
+        <th>상황</th>
+        <th>카메라</th>
+        <th>렌즈</th>
+        <th>설정값</th>
+        <th>앵글</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>부스 전경 인트로</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>24-70 @24mm</td>
+        <td>F4 · ISO1600 · 1/50s</td>
+        <td>광각 패닝, 네온 살리기</td>
+      </tr>
+      <tr>
+        <td>라인워크 클로즈업</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>85mm</td>
+        <td>F1.4 · ISO800 · 1/120s</td>
+        <td>목덜미 측면 타이트, 역광 림라이트</td>
+      </tr>
+      <tr>
+        <td>시저오버콤</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>85mm</td>
+        <td>F1.8 · ISO800 · 1/120s</td>
+        <td>정면 · 가위날 타이트</td>
+      </tr>
+      <tr>
+        <td>헤드스파 탑뷰</td>
+        <td><span class="tag tag-amber">ZR</span></td>
+        <td>광각 렌즈</td>
+        <td>4K60p · ISO800</td>
+        <td>위에서 내려다보기 (손持ち 탑앵글)</td>
+      </tr>
+      <tr>
+        <td>스케일링 매크로</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>85mm 근접</td>
+        <td>F2 · ISO1200 · 1/120s</td>
+        <td>손끝 익스트림 클로즈업</td>
+      </tr>
+      <tr>
+        <td>미스트 분사</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>85mm</td>
+        <td>F2.8 · ISO800 · 1/200s</td>
+        <td>역광 · 입자감 강조 (조명 역방향)</td>
+      </tr>
+      <tr>
+        <td>크루 비하인드</td>
+        <td><span class="tag tag-amber">ZR</span></td>
+        <td>광각 렌즈</td>
+        <td>4K60p · 핸드헬드</td>
+        <td>현장 리액션 스케치</td>
+      </tr>
+      <tr>
+        <td>고객 표정 변화</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>85mm</td>
+        <td>F1.8 · ISO1600 · 1/50s</td>
+        <td>OTS 또는 정면 소프트 포커스</td>
+      </tr>
+      <tr>
+        <td>비포/애프터 전신</td>
+        <td><span class="tag tag-blue">Z6III</span></td>
+        <td>24-70 @50mm</td>
+        <td>F2.8 · ISO800 · 1/120s</td>
+        <td>미디엄 풀샷 · 나이키 룩 완성</td>
+      </tr>
+      <tr>
+        <td>나이키 로고 디테일</td>
+        <td><span class="tag tag-amber">ZR</span></td>
+        <td>표준/광각 렌즈</td>
+        <td>4K60p · ISO800</td>
+        <td>크루 티셔츠 로고 클로즈업</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- SHOT LIST -->
+<section id="shotlist">
+  <div class="section-eyebrow">03 — SHOT LIST</div>
+  <h2>단계별 마스터 숏리스트</h2>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-num">1</div>
+      <div class="tl-content">
+        <div class="tl-title">인트로 — 나이키 나이트 마켓 부스 확립</div>
+        <div class="pill-row">
+          <span class="tag tag-gray">Z6III 24mm 광각 팬</span>
+          <span class="tag tag-gray">ZR 핸드헬드 스케치</span>
+        </div>
+        <div class="tl-sub">
+          ① 행사 전경 네온 광각 (24mm, F4, ISO1600)<br>
+          ② 디아우트로 × 나이키 브랜드 보드 팬 숏 (24-70mm 팬)<br>
+          ③ 크루 티셔츠 로고 클로즈업 (ZR)<br>
+          ④ 소독약·소품 세팅하는 손 클로즈업 (85mm, 긴장감 연출)
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-num">2</div>
+      <div class="tl-content">
+        <div class="tl-title">제1체어 — 프리미엄 맨즈 커트</div>
+        <div class="pill-row">
+          <span class="tag tag-blue">Z6III 85mm 메인</span>
+          <span class="tag tag-amber">ZR 비하인드</span>
+        </div>
+        <div class="tl-sub">
+          ① 두피 진단 OTS 숏 (85mm, 전문성 강조)<br>
+          ② 목덜미 라인워크 측면 타이트 (F1.4, 역광 모발)<br>
+          ③ 시저오버콤 정면 · 가위날 클로즈업 (Rode 수음 동시)<br>
+          ④ 클리퍼 귀라인 정리 (1/120s, 모발 잘리는 순간 포착)<br>
+          ⑤ 드라이 볼륨 형성 과정 (ZR 탑뷰)
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-num">3</div>
+      <div class="tl-content">
+        <div class="tl-title">제2체어 — 좌식 건식 헤드스파</div>
+        <div class="pill-row">
+          <span class="tag tag-teal">Z6III 85mm 매크로</span>
+          <span class="tag tag-amber">ZR 탑뷰</span>
+        </div>
+        <div class="tl-sub">
+          ① 스케일링 솔루션 도포 익스트림 클로즈업 (85mm 근접, F2)<br>
+          ② 두피 섹션 나누는 손끝 (DJI Mic Mini ① 수음 동시)<br>
+          ③ 좌식 지압 모션 + 고객 긴장 풀리는 표정 교차편집<br>
+          ④ 목·어깨 데콜테 마사지 핸드헬드 팔로우 (ZR)<br>
+          ⑤ 쿨링 미스트 분사 — 역광 입자감 (F2.8, 1/200s, 보조광 역방향)
+        </div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-num">4</div>
+      <div class="tl-content">
+        <div class="tl-title">완성 & 브랜드 경험 공유</div>
+        <div class="pill-row">
+          <span class="tag tag-lime">메인 마무리 컷</span>
+          <span class="tag tag-gray">Z6III + ZR 동시</span>
+        </div>
+        <div class="tl-sub">
+          ① 포마드 손바닥 펴는 극적 클로즈업<br>
+          ② 거울 통해 완성 머리 확인 — 고객 미소 (85mm 소프트)<br>
+          ③ 크루 하이파이브 · 자연스러운 비하인드 (ZR)<br>
+          ④ 나이키 룩 완성 전신 숏 (24-70 @50mm, 마무리 컷)
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 아트렌 -->
+<section id="artren">
+  <div class="section-eyebrow">04 — MY CONTENT</div>
+  <h2>아트렌 인스타그램 콘텐츠 구성</h2>
+
+  <div class="content-channel">
+    <div class="ch-badge ch-artren">아트렌 @artren — 미용인 감성 인스타그램</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:1.2rem">
+      나이키 협업 현장에 나가 있는 미용인의 시각. 크루로 활동하며 자연스럽게 담는 전문가 관점 콘텐츠.
+    </p>
+
+    <div class="grid-2">
+      <details open>
+        <summary>릴스 ① — 바버 클로즈업 ASMR 릴스</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-pink">릴스 15~30초</span>
+            <span class="tag tag-gray">Z6III 85mm</span>
+            <span class="tag tag-orange">Rode 수음</span>
+          </div>
+          <strong>컷 구성</strong><br>
+          클리퍼 진동 → 가위질 → 토닉 분사 → 체어 매치컷 (Ver A 그대로 사용)<br><br>
+          <strong>자막</strong> "CUT. SPRAY. RESET." 또는 한글 자막 "밤을 가르는 라인"<br>
+          <strong>해시태그</strong> #바버샵 #나이키나이트마켓 #헤어컷ASMR #디아우트로<br>
+          <strong>포착 타이밍</strong> 라인워크 중 Rode 마이크 활성화 확인 후 촬영
+        </div>
+      </details>
+
+      <details open>
+        <summary>릴스 ② — 비포/애프터 전환 릴스</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-pink">릴스 20~45초</span>
+            <span class="tag tag-gray">Z6III 24-70</span>
+          </div>
+          <strong>컷 구성</strong><br>
+          착석 고객 (비포) → 시술 하이라이트 → 거울 확인 미소 (애프터)<br><br>
+          <strong>전환 기법</strong> 손 와이프 전환 or 조명 플래시<br>
+          <strong>BGM</strong> Kaytranada "Lite Spots" 분위기 트랙<br>
+          <strong>캡션</strong> "나이키 × 디아우트로 현장. 한 번 앉으면 달라집니다."
+        </div>
+      </details>
+
+      <details>
+        <summary>피드 ① — 크루 단체 스틸컷</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-pink">피드 정사각형</span>
+            <span class="tag tag-gray">Z6III 35mm 혹은 24-70</span>
+          </div>
+          <strong>구도</strong> 크루 티셔츠 나이키 로고 보이는 배후 숏 or 정면 자연스러운 단체컷<br><br>
+          <strong>편집</strong> 네온 테일 + 딥 블랙 무드 보정, 하드 콘트라스트<br>
+          <strong>캡션</strong> "The crew. 오늘 밤의 팀."
+        </div>
+      </details>
+
+      <details>
+        <summary>스토리 — 현장 실시간 비하인드</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-pink">스토리 세로 9:16</span>
+            <span class="tag tag-amber">ZR 핸드헬드</span>
+          </div>
+          <strong>소재</strong><br>
+          · 세팅 중인 바버 도구들 플랫레이<br>
+          · 현장 네온 분위기 자연스러운 스케치<br>
+          · 고객 반응 짧은 인터뷰 (Mic Mini ②)<br>
+          · 나이키 × 디아우트로 로고 보드 클로즈업
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- 아트렌더 -->
+<section id="artrender">
+  <div class="section-eyebrow">05 — MY CONTENT</div>
+  <h2>아트렌더 콘텐츠 구성</h2>
+
+  <div class="content-channel">
+    <div class="ch-badge ch-artrender">아트렌더 — 미용인들의 영감 매거진</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:1.2rem">
+      미용인 독자를 위한 인사이트 & 영감. 현장 기술·트렌드·브랜드 협업의 이면을 매거진 톤으로.
+    </p>
+
+    <div class="grid-2">
+      <details open>
+        <summary>매거진 릴스 — "좌식 건식 헤드스파" 기술 소개</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-lime">릴스 45~60초</span>
+            <span class="tag tag-gray">Z6III 85mm</span>
+          </div>
+          <strong>컨셉</strong> 수조 없이 팝업에서 헤드스파를 구현한 기술적 해법에 집중<br><br>
+          <strong>컷 구성</strong><br>
+          스케일링 젤 도포 매크로 → 두피 섹션 나누기 → 지압 손끝 → 미스트 분사 입자감<br><br>
+          <strong>자막 스타일</strong> 매거진 서체 (Noto Serif) + 기술 용어 영한 병기<br>
+          "Dry Scalp Therapy. 물 없이도 완성되는 스파."<br>
+          <strong>해시태그</strong> #헤드스파 #미용인 #바버기술 #아트렌더
+        </div>
+      </details>
+
+      <details open>
+        <summary>매거진 릴스 — "브랜드 협업을 만드는 법" 인사이트</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-lime">릴스 30~45초</span>
+            <span class="tag tag-amber">ZR + Z6III 혼합</span>
+          </div>
+          <strong>컨셉</strong> 나이키 같은 글로벌 브랜드가 로컬 바버샵을 선택한 이유 — 미용인 관점 해석<br><br>
+          <strong>컷 구성</strong><br>
+          나이키 보드 클로즈업 → 크루 준비 손 → 바버 시술 하이라이트 → 인터뷰 (본인 or 바버)<br><br>
+          <strong>캡션</strong> "글로벌 브랜드는 왜 로컬 바버를 찾을까. 현장에서 답을 봤습니다."
+        </div>
+      </details>
+
+      <details>
+        <summary>피드 — 바버 도구 플랫레이 매거진 스틸</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-lime">피드 4:5</span>
+            <span class="tag tag-gray">Z6III 85mm 탑뷰</span>
+          </div>
+          <strong>소재</strong> 바리깡·가위·포마드 캔·콤 — 나이키 티셔츠 위 플랫레이<br>
+          <strong>조명</strong> 5600K LED 소프트박스 1방향<br>
+          <strong>편집</strong> 하이콘트라스트 흑백 or 딥 컬러 베이스<br>
+          <strong>캡션</strong> "오늘 밤을 준비하는 도구들."
+        </div>
+      </details>
+
+      <details>
+        <summary>아티클 연계 — 현장 촬영 롱폼 정리</summary>
+        <div class="details-body">
+          <strong>소재</strong> 이번 촬영 가이드라인 문서 자체를 아트렌더 매거진 아티클로 재편집<br><br>
+          <strong>구성</strong><br>
+          ① 나이트 마켓이란 공간이 바버에게 던지는 과제<br>
+          ② 좌식 건식 헤드스파 기술 해설<br>
+          ③ 카메라·마이크 세팅 노하우 (이 문서 기반)<br>
+          ④ 브랜드 협업 현장의 비하인드<br><br>
+          <strong>연계</strong> 릴스 → 링크인바이오 → 아티클 유입 퍼널
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- 원헤드스파 -->
+<section id="oneheadspa">
+  <div class="section-eyebrow">06 — MY CONTENT</div>
+  <h2>원헤드스파 콘텐츠 구성</h2>
+
+  <div class="content-channel">
+    <div class="ch-badge ch-oneheadspa">원헤드스파 — 헤드스파 전문 채널</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:1.2rem">
+      헤드스파 전문성 포지셔닝. 이번 좌식 건식 헤드스파 시술을 원헤드스파 브랜드로 연결.
+    </p>
+
+    <div class="grid-2">
+      <details open>
+        <summary>릴스 ① — 건식 헤드스파 ASMR 집중 컷</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-teal">릴스 30~60초</span>
+            <span class="tag tag-gray">Z6III 85mm 매크로</span>
+            <span class="tag tag-blue">DJI Mic Mini ① 수음</span>
+          </div>
+          <strong>컷 구성 (원헤드스파 전용 편집)</strong><br>
+          스케일링 젤 도포 → 두피 지압 손끝 → 데콜테 마사지 → 쿨링 미스트 분사<br><br>
+          <strong>사운드 믹스</strong> 분사음 · 마사지음 ASMR 전면. BGM Lo-fi Trap 낮게 깔기<br>
+          <strong>자막</strong> "물 없이. 야외에서도. 완전한 스파."<br>
+          <strong>해시태그</strong> #원헤드스파 #건식헤드스파 #ASMR헤드스파 #두피케어
+        </div>
+      </details>
+
+      <details open>
+        <summary>릴스 ② — "팝업 스파의 비밀" 교육 콘텐츠</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-teal">릴스 45~60초</span>
+            <span class="tag tag-amber">ZR 탑뷰 + Z6III</span>
+          </div>
+          <strong>컨셉</strong> 샴푸대 없이 팝업에서 헤드스파를 구현한 방법 — 전문가 교육 톤<br><br>
+          <strong>컷 구성</strong><br>
+          (자막) "샴푸대 없이 헤드스파 가능할까?" → 좌식 세팅 → 시술 과정 → (자막) "가능합니다."<br><br>
+          <strong>CTA</strong> "좌식 건식 헤드스파 풀 과정 보러오기 (링크인바이오)"
+        </div>
+      </details>
+
+      <details>
+        <summary>피드 — 나이키 × 헤드스파 무드 스틸</summary>
+        <div class="details-body">
+          <div class="pill-row" style="margin-bottom:.6rem">
+            <span class="tag tag-teal">피드 1:1</span>
+            <span class="tag tag-gray">Z6III 85mm</span>
+          </div>
+          <strong>구도</strong> 고객이 스파 받는 사이드 뷰, 나이키 의류 자연스럽게 노출<br>
+          <strong>편집</strong> 소프트 하이라이트 + 스킨톤 강조 (헤드스파 채널 시그니처)<br>
+          <strong>캡션</strong> "나이키 나이트 마켓에서도 원헤드스파."
+        </div>
+      </details>
+
+      <details>
+        <summary>스토리 — 현장 헤드스파 체험 후기 연계</summary>
+        <div class="details-body">
+          <strong>소재</strong> 고객 시술 전후 짧은 인터뷰 (허락 받고 촬영)<br>
+          <strong>장비</strong> ZR + Mic Mini ②<br>
+          <strong>질문 예시</strong><br>
+          "오늘 헤드스파 어떠셨어요?"<br>
+          "물 없이 하는 거 처음이셨죠? 느낌이 어떠셨어요?"<br>
+          <strong>활용</strong> 스토리 하이라이트 '원헤드스파 현장' 저장
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- 채널별 콘텐츠 매핑 요약 -->
+<section>
+  <div class="section-eyebrow">07 — CONTENT MAP</div>
+  <h2>채널 × 콘텐츠 매핑 요약</h2>
+
+  <table class="shot-table">
+    <thead>
+      <tr>
+        <th>채널</th>
+        <th>콘텐츠 유형</th>
+        <th>소재</th>
+        <th>카메라</th>
+        <th>포인트</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="ch-badge ch-artren" style="margin:0">아트렌</span></td>
+        <td>ASMR 릴스</td>
+        <td>커트 클로즈업 + 분사음</td>
+        <td><span class="tag tag-blue">Z6III 85mm</span></td>
+        <td>감각적 · 감성 위주</td>
+      </tr>
+      <tr>
+        <td><span class="ch-badge ch-artren" style="margin:0">아트렌</span></td>
+        <td>비포/애프터 릴스</td>
+        <td>착석 → 완성 변모</td>
+        <td><span class="tag tag-blue">Z6III 24-70</span></td>
+        <td>전환 임팩트</td>
+      </tr>
+      <tr>
+        <td><span class="ch-badge ch-artrender" style="margin:0">아트렌더</span></td>
+        <td>기술 소개 릴스</td>
+        <td>건식 헤드스파 메커니즘</td>
+        <td><span class="tag tag-blue">Z6III 85mm</span></td>
+        <td>매거진 서체 자막</td>
+      </tr>
+      <tr>
+        <td><span class="ch-badge ch-artrender" style="margin:0">아트렌더</span></td>
+        <td>인사이트 릴스</td>
+        <td>브랜드 협업 이면</td>
+        <td><span class="tag tag-amber">ZR 혼합</span></td>
+        <td>미용인 관점 해설</td>
+      </tr>
+      <tr>
+        <td><span class="ch-badge ch-oneheadspa" style="margin:0">원헤드스파</span></td>
+        <td>ASMR 스파 릴스</td>
+        <td>지압 + 미스트 ASMR</td>
+        <td><span class="tag tag-blue">Z6III 매크로</span></td>
+        <td>사운드 믹스 핵심</td>
+      </tr>
+      <tr>
+        <td><span class="ch-badge ch-oneheadspa" style="margin:0">원헤드스파</span></td>
+        <td>교육 릴스</td>
+        <td>팝업 스파 구현법</td>
+        <td><span class="tag tag-amber">ZR 탑뷰</span></td>
+        <td>전문가 교육 톤</td>
+      </tr>
+      <tr>
+        <td><span class="ch-badge ch-nike" style="margin:0">나이키/디아우트로</span></td>
+        <td>메인 브랜드 영상</td>
+        <td>전체 내러티브 옴니버스</td>
+        <td><span class="tag tag-blue">Z6III</span> <span class="tag tag-amber">ZR</span></td>
+        <td>무브먼트 매치컷</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CHECKLIST -->
+<section id="checklist">
+  <div class="section-eyebrow">08 — FIELD CHECKLIST</div>
+  <h2>현장 체크리스트</h2>
+
+  <div class="grid-3">
+    <div class="card">
+      <h3 style="margin-bottom:.7rem">출발 전 장비 확인</h3>
+      <ul class="check-list">
+        <li>Z6III / ZR 배터리 완충 (예비 2개+)</li>
+        <li>ZR 배터리 + 보조배터리</li>
+        <li>85mm + 24-70mm 장착 확인</li>
+        <li>CFexpress / SD카드 여유 공간 확인</li>
+        <li>Rode Wireless Pro 충전 + 페어링</li>
+        <li>DJI Mic Mini ×2 충전 + 케이스</li>
+        <li>5600K 포터블 LED + 디퓨저</li>
+        <li>소형 삼각대 or 고릴라포드</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:.7rem">현장 세팅 순서</h3>
+      <ul class="check-list">
+        <li>Z6III 화이트밸런스 5600K 수동 고정</li>
+        <li>N-Log 또는 ProRes 포맷 확인</li>
+        <li>Rode 마이크 바버 앞치마 근접 장착</li>
+        <li>Mic Mini ① → 헤드스파 스페셜리스트</li>
+        <li>Mic Mini ② → ZR 연동</li>
+        <li>ZR 핸드헬드 켜기</li>
+        <li>보조 LED 조명 피사체 안면부 세팅</li>
+        <li>오디오 레벨 테스트 (Rode 32bit Float)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:.7rem">채널별 필수 포착 리스트</h3>
+      <ul class="check-list">
+        <li>[아트렌] 클리퍼 ASMR 클로즈업 최소 3테이크</li>
+        <li>[아트렌] 고객 비포/애프터 전신 비교</li>
+        <li>[아트렌더] 바버 도구 플랫레이 스틸</li>
+        <li>[아트렌더] 본인 인터뷰 현장 인사이트</li>
+        <li>[원헤드스파] 스케일링 매크로 + Mic Mini 수음</li>
+        <li>[원헤드스파] 미스트 역광 입자감 컷</li>
+        <li>[전채널] 크루 티셔츠 로고 배후 숏</li>
+        <li>[전채널] 나이키 × 디아우트로 보드 클로즈업</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<section id="revision">
+  <div class="section-eyebrow">09 — REVISION NOTE</div>
+  <h2>v1.1 수정 반영</h2>
+  <div class="grid-2">
+    <div class="card card-accent-lime">
+      <h3>추가된 항목</h3>
+      <ul class="check-list">
+        <li>장소·주소·네이버지도 링크</li>
+        <li>사가정역 출발 이동 판단</li>
+        <li>주차장 검색 버튼</li>
+        <li>하이브리드/저공해차 감면 체크 문구</li>
+        <li>2바디 운용 기준</li>
+      </ul>
+    </div>
+    <div class="card card-accent-blue">
+      <h3>카메라 기준 변경</h3>
+      <ul class="check-list">
+        <li>A-CAM: Nikon Z6III</li>
+        <li>B-CAM: Nikon ZR</li>
+        <li>Osmo Pocket 중심 문구를 ZR 보조캠 기준으로 정리</li>
+        <li>현장 스케치·광각·비하인드 역할을 ZR에 배정</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  NIKE NIGHT MARKET × THE OUTTRO — PRODUCTION GUIDE &nbsp;·&nbsp;
+  아트렌 / 아트렌더 / 원헤드스파 콘텐츠 전략 포함 &nbsp;·&nbsp;
+  현장 촬영용 HTML 가이드 · 수정본 v1.1
+</footer>
+
+<script>
+const sections = document.querySelectorAll('section[id], .hero');
+const navLinks = document.querySelectorAll('nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const id = e.target.id || 'mood';
+      const link = document.querySelector(`nav a[href="#${id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
